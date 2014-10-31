@@ -19,12 +19,12 @@ while true; do
    VALUE=0x$(echo ${VALUE##*: } | tr -d ' ')
    VALUE=$(printf "%d" $VALUE)
 
-   # Connect to the MAC of the device and read the scratch 1 characteristic.
+   # Connect to the MAC of the device and read the scratch 2 characteristic.
    TEMP=$(gatttool -b D0:39:72:C8:EB:6B --char-read -a 0x0037)
    TEMP=0x${TEMP##*: }
    TEMP=$(printf "%d" $TEMP)
 
-   # Connect to the MAC of the device and read the scratch 1 characteristic.
+   # Connect to the MAC of the device and read the scratch 3 characteristic.
    VOLT=$(gatttool -b D0:39:72:C8:EB:6B --char-read -a 0x003B)
    VOLT=0x$(echo ${VOLT##*: } | tr -d ' ')
    VOLT=$(printf "%d" $VOLT)
