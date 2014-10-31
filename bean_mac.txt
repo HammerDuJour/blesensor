@@ -1,1 +1,2 @@
-D0:39:72:C8:EB:6B
+BeanSensor01, D0:39:72:C8:EB:6B
+FrakenBean, D0:39:72:D3:4B:A3
