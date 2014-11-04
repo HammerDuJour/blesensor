@@ -16,7 +16,7 @@ Operation
 
 Design Choices
 --------------
-- **Sensor Nodes:** [LightBlue Bean by Punchthrough Designs]<https://punchthrough.com/bean/>
+- **Sensor Nodes:** [LightBlue Bean by Punchthrough Designs](https://punchthrough.com/bean/).
    - Provides 5 scratch BLE services that can be easily manipulated through Arduino code to advertise custom data.
 - **Aggregator:** Node.js
    - Common JS syntax.
