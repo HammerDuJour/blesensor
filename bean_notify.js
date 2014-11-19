@@ -39,6 +39,8 @@ var peripheralDisconnected = function() {
   logData("Event", this.advertisement.localName, "Lost Connection.");
   //noble.startScanning();
   this.removeAllListeners();
+  noble.stopScanning();
+  noble.startScanning();
 };
 
 var sensor = {"name":"", "connected":false};
@@ -123,6 +125,7 @@ noble.on('discover', function(peripheral) {
 //process.stdin.resume();
 
 process.on('SIGINT', function() {
+  console.log();
   logData("Event", "System", "SIGINT caught.");
   exitHandler();
 });
@@ -138,7 +141,6 @@ process.on('uncaughtException', function(err) {
 });
 
 function exitHandler(options, err) {
-  console.log();
   logData("Event", "System", "Shutting down.");
   /*
   if (sensor != null){
