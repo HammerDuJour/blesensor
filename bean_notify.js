@@ -1,5 +1,8 @@
 var noble = require('noble');
 var moment = require('moment');
+var schedule = require('node-schedule');
+var os = require('os');
+var fs = require('fs');
 
 var serviceUuids = ['a495ff20c5b14b44b5121370f02d74de'];
 var charUuids = ['a495ff21c5b14b44b5121370f02d74de',
@@ -7,22 +10,51 @@ var charUuids = ['a495ff21c5b14b44b5121370f02d74de',
                  'a495ff23c5b14b44b5121370f02d74de'];
 
 var scanning = false;
+var poweredOn = false;
+
+var logPath = "./";
+var logFile;
+function logFileUpdate() {
+  logFile = os.hostname() + '_' + moment().format("YYYY-MM-DD_hh-mm") + '.log';
+}
+logFileUpdate();
+
+console.log("File name = " + logFile);
+
+var logRule = new schedule.RecurrenceRule();
+
+// Various rules for rolling over the log:
+//logRule.hour = 0;                          // Every day at midnight
+//logRule.minute = [0, 10, 20, 30, 40, 50];  // Every ten minutes
+logRule.minute = 0;                        // Every hour on the hour
+
+var logRoll = schedule.scheduleJob(logRule, logFileUpdate);
 
 function logData(logType, sensorID, logMsg) {
-  var timestamp = moment().format("YYYY-MM-DD hh:mm:ss");
-  console.log(timestamp + ',' +
-              logType + ',' +
-              sensorID + ',' +
-              logMsg);
+  var timestamp = moment().format("YYYY-MM-DD hh:mm:ss Z");
+  var logString = timestamp + ',' +
+                  logType + ',' +
+                  sensorID + ',' +
+                  logMsg;
+  console.log(logString);
+  fs.appendFile(logPath+logFile, logString + '\n', function (err) {
+    if(err){
+      console.log(timestamp + ',' +
+                  "Error" + ',' +
+                  "System" + ',' +
+                  "Error writing log file: " + err);
+    }
+  });
 }
 
 noble.on('stateChange', function(state) {
   if (state === 'poweredOn') {
     logData("Event", "System", "Bluetooth enabled.");
+    poweredOn = true;
     startScan();
-    //noble.startScanning();
   } else {
     logData("Event", "System", "Bluetooth disabled.");
+    poweredOn = false;
     noble.stopScanning();
   }
 });
@@ -37,30 +69,27 @@ noble.on('scanStart', function() {
   scanning = true;
 });
 
-//var peripheralUuid = "ef7d890b8bb04cf1a1262695e62bc6a4"; // BeanSensor01
-//var peripheralUuid = "b92766e2be854af3860c066c6c6e1d94"; // FrankenBean
-
 var peripheralDisconnected = function() {
   logData("Event", this.advertisement.localName, "Lost Connection.");
-  //noble.startScanning();
   this.removeAllListeners();
- // noble.stopScanning();
- // noble.startScanning();
 };
 
 function startScan() {
-  noble.startScanning();
-  setTimeout(stopScan, 30000);
+  if(poweredOn) {
+    noble.startScanning();
+    setTimeout(stopScan, 30000);
+  }
 }
 
 function stopScan() {
   noble.stopScanning();
-  setTimeout(startScan, 300000);
+  if(poweredOn) {
+    setTimeout(startScan, 300000);
+  }
 }
 
 noble.on('discover', function(peripheral) {
   logData("Event", peripheral.advertisement.localName, "Discovered.");
-  //if (peripheral.uuid === peripheralUuid) {
   if(peripheral.advertisement.localName) {
     if(peripheral.advertisement.localName.lastIndexOf("_pearl-", 0) === 0) {
 
@@ -72,7 +101,6 @@ noble.on('discover', function(peripheral) {
             "Connection Error.");
           return;
         }
-        //noble.stopScanning();
         peripheral.discoverServices(serviceUuids,
           function(error, services) {
           if(error) {
