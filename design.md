@@ -25,3 +25,8 @@ Design Choices
    - Vogue.
 - **Sensor Identifiers:** BLE advertisement name
    - Easily set with the LightBlue app but that only runs on Mac (I think).
+
+Tasks
+--------------
+- [ ] Create daily log files.
+- [ ] Push daily log files to Dropbox.
