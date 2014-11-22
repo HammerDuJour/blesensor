@@ -6,6 +6,8 @@ var charUuids = ['a495ff21c5b14b44b5121370f02d74de',
                  'a495ff22c5b14b44b5121370f02d74de',
                  'a495ff23c5b14b44b5121370f02d74de'];
 
+var scanning = false;
+
 function logData(logType, sensorID, logMsg) {
   var timestamp = moment().format("YYYY-MM-DD hh:mm:ss");
   console.log(timestamp + ',' +
@@ -17,7 +19,8 @@ function logData(logType, sensorID, logMsg) {
 noble.on('stateChange', function(state) {
   if (state === 'poweredOn') {
     logData("Event", "System", "Bluetooth enabled.");
-    noble.startScanning();
+    startScan();
+    //noble.startScanning();
   } else {
     logData("Event", "System", "Bluetooth disabled.");
     noble.stopScanning();
@@ -26,10 +29,12 @@ noble.on('stateChange', function(state) {
 
 noble.on('scanStop', function() {
   logData("Event", "System", "Scanning has stopped.");
+  scanning = false;
 });
 
 noble.on('scanStart', function() {
   logData("Event", "System", "Scanning has started.");
+  scanning = true;
 });
 
 //var peripheralUuid = "ef7d890b8bb04cf1a1262695e62bc6a4"; // BeanSensor01
@@ -39,11 +44,19 @@ var peripheralDisconnected = function() {
   logData("Event", this.advertisement.localName, "Lost Connection.");
   //noble.startScanning();
   this.removeAllListeners();
-  noble.stopScanning();
-  noble.startScanning();
+ // noble.stopScanning();
+ // noble.startScanning();
 };
 
-var sensor = {"name":"", "connected":false};
+function startScan() {
+  noble.startScanning();
+  setTimeout(stopScan, 30000);
+}
+
+function stopScan() {
+  noble.stopScanning();
+  setTimeout(startScan, 300000);
+}
 
 noble.on('discover', function(peripheral) {
   logData("Event", peripheral.advertisement.localName, "Discovered.");
