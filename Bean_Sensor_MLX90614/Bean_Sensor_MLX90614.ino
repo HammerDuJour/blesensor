@@ -8,7 +8,7 @@ uint16_t minutes;
 int16_t voltage;
 
 boolean debug = false;
-Adafruit_MLX90614MLX90614 mlx = Adafruit_MLX90614();
+Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 
 void setup()
 {
