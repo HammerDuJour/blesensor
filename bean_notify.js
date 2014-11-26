@@ -15,7 +15,7 @@ var poweredOn = false;
 var logPath = "./";
 var logFile;
 function logFileUpdate() {
-  logFile = os.hostname() + '_' + moment().format("YYYY-MM-DD_hh-mm") + '.log';
+  logFile = os.hostname() + '_' + moment().format("YYYY-MM-DD_HH-mm") + '.log';
 }
 logFileUpdate();
 
@@ -31,7 +31,7 @@ logRule.minute = 0;                        // Every hour on the hour
 var logRoll = schedule.scheduleJob(logRule, logFileUpdate);
 
 function logData(logType, sensorID, logMsg) {
-  var timestamp = moment().format("YYYY-MM-DD hh:mm:ss Z");
+  var timestamp = moment().format("YYYY-MM-DD HH:mm:ss Z");
   var logString = timestamp + ',' +
                   logType + ',' +
                   sensorID + ',' +
