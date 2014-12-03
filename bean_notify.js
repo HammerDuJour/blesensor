@@ -3,6 +3,7 @@ var moment = require('moment');
 var schedule = require('node-schedule');
 var os = require('os');
 var fs = require('fs');
+var dropbox = require('./dropbox.js');
 
 var serviceUuids = ['a495ff20c5b14b44b5121370f02d74de'];
 var charUuids = ['a495ff21c5b14b44b5121370f02d74de',
@@ -12,11 +13,20 @@ var charUuids = ['a495ff21c5b14b44b5121370f02d74de',
 var scanning = false;
 var poweredOn = false;
 
-var logPath = "./";
+var logPath = "./logs/";
 var logFile;
 function logFileUpdate() {
+  var filePath = logPath + logFile;
+  if(fs.existsSync(filePath)) {
+    dropbox.writeFile(filePath, function(err) {
+      if(err) {
+        logData("Error", "System", "Unable to upload " + filePath);
+      }
+    });
+  }
   logFile = os.hostname() + '_' + moment().format("YYYY-MM-DD_HH-mm") + '.log';
 }
+
 logFileUpdate();
 
 console.log("File name = " + logFile);
@@ -27,6 +37,7 @@ var logRule = new schedule.RecurrenceRule();
 //logRule.hour = 0;                          // Every day at midnight
 //logRule.minute = [0, 10, 20, 30, 40, 50];  // Every ten minutes
 logRule.minute = 0;                        // Every hour on the hour
+//logRule.second = 0;                        // Every minute on the minute
 
 var logRoll = schedule.scheduleJob(logRule, logFileUpdate);
 
