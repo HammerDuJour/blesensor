@@ -10,17 +10,19 @@ var charUuids = ['a495ff21c5b14b44b5121370f02d74de',
                  'a495ff22c5b14b44b5121370f02d74de',
                  'a495ff23c5b14b44b5121370f02d74de'];
 
-var scanning = false;
 var poweredOn = false;
 
 var logPath = "./logs/";
 var logFile;
-function logFileUpdate() {
+function logFileUpdate(callback) {
   var filePath = logPath + logFile;
   if(fs.existsSync(filePath)) {
     dropbox.writeFile(filePath, function(err) {
       if(err) {
         logData("Error", "System", "Unable to upload " + filePath);
+      }
+      if(typeof(callback) == 'function') {
+        callback();
       }
     });
   }
@@ -36,8 +38,8 @@ var logRule = new schedule.RecurrenceRule();
 // Various rules for rolling over the log:
 //logRule.hour = 0;                          // Every day at midnight
 //logRule.minute = [0, 10, 20, 30, 40, 50];  // Every ten minutes
-logRule.minute = 0;                        // Every hour on the hour
-//logRule.second = 0;                        // Every minute on the minute
+//logRule.minute = 0;                        // Every hour on the hour
+logRule.second = 0;                        // Every minute on the minute
 
 var logRoll = schedule.scheduleJob(logRule, logFileUpdate);
 
@@ -72,12 +74,10 @@ noble.on('stateChange', function(state) {
 
 noble.on('scanStop', function() {
   logData("Event", "System", "Scanning has stopped.");
-  scanning = false;
 });
 
 noble.on('scanStart', function() {
   logData("Event", "System", "Scanning has started.");
-  scanning = true;
 });
 
 var peripheralDisconnected = function() {
@@ -200,5 +200,7 @@ function exitHandler(options, err) {
   }
   */
   noble.stopScanning();
-  process.exit();
+  logFileUpdate(function() {
+    process.exit();
+  });
 }
