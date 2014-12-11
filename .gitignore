@@ -6,3 +6,4 @@
 *.gcode
 debug.txt
 *.pklg
+*.out
