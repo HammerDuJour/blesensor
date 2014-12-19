@@ -1,0 +1,7 @@
+# Cron runs at most once a minute.
+# Using all wildcards will run the job every minute.
+# Otherwise specify the times / days to run as:
+# min hour day_of_mon month day_of_week
+
+* * * * * /home/pi/blesensor/admin/check-ip.sh >> ~/log/admin.log 2>&1
+
