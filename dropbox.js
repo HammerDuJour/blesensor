@@ -13,8 +13,8 @@ catch(err) {
   console.log(err);
   process.exit();
 }
-var dboxKeysPath = '/Users/tommy/dbox_keys.txt';
-var dboxTokenPath = '/Users/tommy/dbox_token.txt';
+var dboxKeysPath = '/home/pi/dbox_keys.txt';
+var dboxTokenPath = '/home/pi/dbox_token.txt';
 var dboxKeys;
 try {
   dboxKeys = JSON.parse(
