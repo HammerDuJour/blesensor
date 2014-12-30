@@ -13,8 +13,8 @@ Operation
 1. Set the advertisement name of the sensor with an application specific prefix (e.g. \_pearl-) to associate it with the polling application.
 1. Deploy aggregation nodes and run a polling application to discover, log, and monitor sensor nodes (e.g. bean\_notify.js).
 1. Connect aggregation nodes to a central database to store readings from all sensor nodes. Today, bean\_notify.js will attempt to upload each log file to Dropbox each time a new log file is created. If valid Dropbox account details are not provided in these files, you will be prompted to authorize the app with Dropbox:
-   -- dbox\_keys.txt - App specific keys from the developer's account.
-   -- dbox\_tokey.txt - Authorization token programmatically generated and tied to the user's account.
+   - dbox\_keys.txt - App specific keys from the developer's account.
+   - dbox\_tokey.txt - Authorization token programmatically generated and tied to the user's account.
 1. Filter out duplicate readings from aggregation nodes that detect duplicate sensor nodes.
 
 Design Choices
