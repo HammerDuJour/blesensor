@@ -8,11 +8,13 @@ The goal of this project is to implement a system to collect arbitrary data at p
 
 Operation
 ---------
-1. Build and configure sensor node with appropriate sensor circuitry.
-1. Program sensor node to read and advertise sensor data.
-1. Set the advertisement name of the sensor with an application specific prefix (e.g. _pearl-) to associate it with the polling application.
-1. Deploy aggregation nodes and run a polling application to discover, log, and monitor sensor nodes.
-1. Connect aggregation nodes to a central database to store readings from all sensor nodes.
+1. Build and configure sensor node with appropriate sensor circuitry (e.g. LightBlue Bean BLE device with IR temp sensor).
+1. Program sensor node to read and advertise sensor data (e.g. Bean\_Sensor\_MLX90614).
+1. Set the advertisement name of the sensor with an application specific prefix (e.g. \_pearl-) to associate it with the polling application.
+1. Deploy aggregation nodes and run a polling application to discover, log, and monitor sensor nodes (e.g. bean\_notify.js).
+1. Connect aggregation nodes to a central database to store readings from all sensor nodes. Today, bean\_notify.js will attempt to upload each log file to Dropbox each time a new log file is created. If valid Dropbox account details are not provided in these files, you will be prompted to authorize the app with Dropbox:
+   -- dbox\_keys.txt - App specific keys from the developer's account.
+   -- dbox\_tokey.txt - Authorization token programmatically generated and tied to the user's account.
 1. Filter out duplicate readings from aggregation nodes that detect duplicate sensor nodes.
 
 Design Choices
@@ -28,5 +30,7 @@ Design Choices
 
 Tasks
 --------------
-- [ ] Create daily log files.
-- [ ] Push daily log files to Dropbox.
+- [x] Create daily log files.
+   - Actually using hourly now but this is configurable.
+- [x] Push daily log files to Dropbox.
+- [ ] Test the Dropbox data API as an alternative to files.

@@ -5,13 +5,20 @@ var os = require('os');
 var fs = require('fs');
 var dropbox = require('./dropbox.js');
 
+// *** These are UUID's specific to the LightBlue Bean
+// *** The service is the "Scratch" servie
 var serviceUuids = ['a495ff20c5b14b44b5121370f02d74de'];
+// *** These are the Scratch Characteristics being used for:
+//     - Nunmber of minutes running (e.g. battery use)
+//     - Object temperature (IR)
+//     - Bean battery voltage
 var charUuids = ['a495ff21c5b14b44b5121370f02d74de',
                  'a495ff22c5b14b44b5121370f02d74de',
                  'a495ff23c5b14b44b5121370f02d74de'];
 
-var poweredOn = false;
-
+// *** The log file will contain all types of events including data.
+// *** Each log file update creates a new, timestamped file and attempts to
+//     upload the previous file to Dropbox.
 var logPath = "./logs/";
 var logFile;
 function logFileUpdate(callback) {
@@ -60,6 +67,9 @@ function logData(logType, sensorID, logMsg) {
   });
 }
 
+// *** Track the state of the BT radio. If it is off, not much will happen.
+var poweredOn = false;
+
 noble.on('stateChange', function(state) {
   if (state === 'poweredOn') {
     logData("Event", "System", "Bluetooth enabled.");
@@ -85,22 +95,28 @@ var peripheralDisconnected = function() {
   this.removeAllListeners();
 };
 
+var scanTime = 30000;  // Time (ms) spent scanning for devices
+var scanInt = 300000;  // Time (ms) between scans
 function startScan() {
   if(poweredOn) {
     noble.startScanning();
-    setTimeout(stopScan, 30000);
+    setTimeout(stopScan, scanTime);
   }
 }
 
 function stopScan() {
   noble.stopScanning();
   if(poweredOn) {
-    setTimeout(startScan, 300000);
+    setTimeout(startScan, scanInt);
   }
 }
 
+// *** This is where the magic happens.  
 noble.on('discover', function(peripheral) {
   logData("Event", peripheral.advertisement.localName, "Discovered.");
+
+  // *** Use the local name in the BLE advertisement to find our devices
+  //     with a prefix of "_pearl-".
   if(peripheral.advertisement.localName) {
     if(peripheral.advertisement.localName.lastIndexOf("_pearl-", 0) === 0) {
 
@@ -136,6 +152,8 @@ noble.on('discover', function(peripheral) {
             var voltChar = characteristics[2];
             var volts = 0;
 
+	    // *** This fires each time a notification is received. We're
+	    //     subscribing to changes in the "minutes".
             minutesChar.on('read', function(data, isNotification) {
               minutes = data.readUInt16BE(0);
               tempChar.read(function(error, data) {
@@ -144,7 +162,6 @@ noble.on('discover', function(peripheral) {
                     "Unable to read temp. Aborting reads.");
                   return;
                 }
-                //temp = data.readInt8(0);
                 temp = data.readInt16BE(0);
                 voltChar.read(function(error, data) {
                   if(error) {
@@ -174,6 +191,7 @@ noble.on('discover', function(peripheral) {
 });
 
 // Start reading from stdin so we don't exit.
+// We don't need this the scheduling / timers above run forever.
 //process.stdin.resume();
 
 process.on('SIGINT', function() {
@@ -194,11 +212,6 @@ process.on('uncaughtException', function(err) {
 
 function exitHandler(options, err) {
   logData("Event", "System", "Shutting down.");
-  /*
-  if (sensor != null){
-    sensor.disconnect();
-  }
-  */
   noble.stopScanning();
   logFileUpdate(function() {
     process.exit();
