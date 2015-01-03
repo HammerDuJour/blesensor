@@ -110,3 +110,8 @@ exports.writeFile = function(filePath, callback) {
   });
 }
 
+exports.checkTokens = function() {
+  getToken(function(token) {
+    console.log("Dropbox token check complete");
+  });
+}

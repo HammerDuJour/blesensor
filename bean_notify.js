@@ -5,6 +5,8 @@ var os = require('os');
 var fs = require('fs');
 var dropbox = require('./dropbox.js');
 
+dropbox.checkTokens();
+
 // *** These are UUID's specific to the LightBlue Bean
 // *** The service is the "Scratch" servie
 var serviceUuids = ['a495ff20c5b14b44b5121370f02d74de'];
@@ -33,7 +35,7 @@ function logFileUpdate(callback) {
       }
     });
   }
-  logFile = os.hostname() + '_' + moment().format("YYYY-MM-DD_HH-mm") + '.log';
+  logFile = os.hostname() + '_' + moment().format("YYYY-MM-DD_HH-mm") + '.csv';
 }
 
 logFileUpdate();
