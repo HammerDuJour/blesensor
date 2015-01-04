@@ -27,6 +27,10 @@ function logFileUpdate(callback) {
     dropbox.writeFile(filePath, function(err) {
       if(err) {
         logData("Error", "System", "Unable to upload " + filePath);
+      } else {
+        fs.unlink(filePath, function(err) {
+	  if(err) logData("Error", "System", "Unable to delete " + filePath);
+	});
       }
       if(typeof(callback) == 'function') {
         callback();
@@ -45,8 +49,8 @@ var logRule = new schedule.RecurrenceRule();
 // Various rules for rolling over the log:
 //logRule.hour = 0;                          // Every day at midnight
 //logRule.minute = [0, 10, 20, 30, 40, 50];  // Every ten minutes
-logRule.minute = 0;                        // Every hour on the hour
-//logRule.second = 0;                        // Every minute on the minute
+//logRule.minute = 0;                        // Every hour on the hour
+logRule.second = 0;                        // Every minute on the minute
 
 var logRoll = schedule.scheduleJob(logRule, logFileUpdate);
 
