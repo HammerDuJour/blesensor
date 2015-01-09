@@ -2,10 +2,10 @@
   "name": "blesensor",
   "version": "0.1.0",
   "dependencies": {
-    "noble": "0.3.6",
+    "noble": "0.3.7",
     "dbox": "0.6.3",
     "moment": "2.8.4",
-    "schedule": "0.1.0"
+    "schedule": "0.1.0",
     "prompt": "1.4.28"
   }
 }
