@@ -16,8 +16,8 @@ The file [config-example.json](https://github.com/tompropst/datasharing) shows t
 
 Once configured, you launch the app as:
 ````
-node bean\_notify.js
+node bean_notify.js
 ````
 All data and events are written to a single log file named for the system the script is running on and the date / time the file is started. A new file is created according to the interval specified in the ````config.json```` file. When a new log file is created, the previous file is uploaded to Dropbox.
 
-Sensors should have the Arduino code loaded and a unique Local Name should be assiged to each sensor with the appropriate prefix to denote that the sensor belongs to this system (currently ````\_pearl-````). Sensors are scanned for periodically and if discovered, we subscribe to notifications for new data.
+Sensors should have the Arduino code loaded and a unique Local Name should be assiged to each sensor with the appropriate prefix to denote that the sensor belongs to this system (currently ````_pearl-````). Sensors are scanned for periodically and if discovered, we subscribe to notifications for new data.
