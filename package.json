@@ -1,6 +1,6 @@
 {
   "name": "blesensor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "dependencies": {
     "noble": "0.3.7",
     "dbox": "0.6.3",
