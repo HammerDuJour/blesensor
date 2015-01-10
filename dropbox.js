@@ -13,15 +13,22 @@ catch(err) {
   console.log(err);
   process.exit();
 }
-var dboxKeysPath = '../../dbox_keys.txt';
-var dboxTokenPath = '../../dbox_token.txt';
-var dboxKeys;
+
+var configPath = __dirname + '/config.json';
 try {
-  dboxKeys = JSON.parse(
-                 fs.readFileSync(dboxKeysPath, 'utf8'));
+  config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 }
 catch(err) {
-  console.log("Error: Unable to open " + dboxKeysPath);
+  console.log("Error: Unable to parse " + configPath);
+  console.log(err);
+}
+
+var dboxKeys;
+try {
+  dboxKeys = JSON.parse(fs.readFileSync(config.dboxKeyPath, 'utf8'));
+}
+catch(err) {
+  console.log("Error: Unable to open " + config.dboxKeyPath);
   process.exit();
 }
 if(debug) console.log("Debug: Keys = ");
@@ -30,9 +37,9 @@ if(debug) console.log(dboxKeys);
 var dboxApp = dbox.app(dboxKeys);
 
 function getToken(callback) {
-  if(fs.existsSync(dboxTokenPath)) {
+  if(fs.existsSync(config.dboxTokenPath)) {
     if(debug) console.log("Debug: Access token found");
-    var dboxToken = JSON.parse(fs.readFileSync(dboxTokenPath, 'utf8'));
+    var dboxToken = JSON.parse(fs.readFileSync(config.dboxTokenPath, 'utf8'));
     if(typeof callback == 'function') {
       callback(dboxToken);
     }
@@ -50,7 +57,7 @@ function getToken(callback) {
           if(status == '200') {
             if(debug) console.log("Debug: Access Token =");
             if(debug) console.log(access_token);
-            fs.writeFile(dboxTokenPath, 
+            fs.writeFile(config.dboxTokenPath, 
                          JSON.stringify(access_token), function(err) {
               if(err) {
                 console.log("Error: Unable to write to access token file");

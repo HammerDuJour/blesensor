@@ -1,0 +1,8 @@
+{
+  "logPath"        : "./logs/",
+  "dboxKeyPath"    : "/home/pi/dbox_keys.txt",
+  "dboxTokenPath"  : "/home/pi/dbox_token.txt",
+  "logRollIntMins" : 60,
+  "scanTimeSecs"   : 30,
+  "scanIntSecs"    : 300
+}

@@ -5,10 +5,27 @@ var os = require('os');
 var fs = require('fs');
 var dropbox = require('./dropbox.js');
 
-dropbox.checkTokens();
+var configPath = __dirname + '/config.json';
+try {
+  config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  console.log('*** Configuration ***');
+  console.log('  Log Path       : ' + config.logPath);
+  console.log('  DBox Key Path  : ' + config.dboxKeyPath);
+  console.log('  DBox Token Path: ' + config.dboxTokenPath);
+  console.log('  Log Roll Int   : ' + config.logRollIntMins + ' min');
+  console.log('  Scan Time      : ' + config.scanTimeSecs + ' sec');
+  console.log('  Scan Int       : ' + config.scanIntSecs + ' sec');
+}
+catch(err) {
+  console.log("Error: Unable to parse " + configPath);
+  console.log(err);
+  process.exit();
+}
+
+dropbox.checkTokens(config.dboxKeyPath, config.dboxTokenPath);
 
 // *** These are UUID's specific to the LightBlue Bean
-// *** The service is the "Scratch" servie
+// *** The service is the "Scratch" service
 var serviceUuids = ['a495ff20c5b14b44b5121370f02d74de'];
 // *** These are the Scratch Characteristics being used for:
 //     - Nunmber of minutes running (e.g. battery use)
@@ -21,10 +38,11 @@ var charUuids = ['a495ff21c5b14b44b5121370f02d74de',
 // *** The log file will contain all types of events including data.
 // *** Each log file update creates a new, timestamped file and attempts to
 //     upload the previous file to Dropbox.
-var logPath = "./logs/";
 var logFile;
 function logFileUpdate(callback) {
-  var filePath = logPath + logFile;
+  var filePath = config.logPath + logFile;
+  logFile = os.hostname() + '_' + moment().format("YYYY-MM-DD_HH-mm") + '.csv';
+  console.log("File name = " + logFile);
   if(fs.existsSync(filePath)) {
     dropbox.writeFile(filePath, function(err) {
       if(err) {
@@ -36,16 +54,21 @@ function logFileUpdate(callback) {
       }
       if(typeof(callback) == 'function') {
         callback();
+	return;
       }
     });
+  } else {
+    if(typeof(callback) == 'function') {
+      callback();
+    }
   }
-  logFile = os.hostname() + '_' + moment().format("YYYY-MM-DD_HH-mm") + '.csv';
 }
 
 logFileUpdate();
 
-console.log("File name = " + logFile);
-
+// *** Use node-schedule below instead of setInterval if you want logs to
+//     roll over at specific times of day.
+/*
 var logRule = new schedule.RecurrenceRule();
 
 // Various rules for rolling over the log:
@@ -55,6 +78,11 @@ logRule.minute = 0;                        // Every hour on the hour
 //logRule.second = 0;                        // Every minute on the minute
 
 var logRoll = schedule.scheduleJob(logRule, logFileUpdate);
+*/
+
+// *** Set the log rollover interval (in ms)
+//     mm*ss*1000
+setInterval(logFileUpdate, config.logRollIntMins*60*1000);
 
 function logData(logType, sensorID, logMsg) {
   var timestamp = moment().format("YYYY-MM-DD HH:mm:ss Z");
@@ -63,7 +91,7 @@ function logData(logType, sensorID, logMsg) {
                   sensorID + ',' +
                   logMsg;
   console.log(logString);
-  fs.appendFile(logPath+logFile, logString + '\n', function (err) {
+  fs.appendFile(config.logPath+logFile, logString + '\n', function (err) {
     if(err){
       console.log(timestamp + ',' +
                   "Error" + ',' +
@@ -101,19 +129,17 @@ var peripheralDisconnected = function() {
   this.removeAllListeners();
 };
 
-var scanTime = 30000;  // Time (ms) spent scanning for devices
-var scanInt = 300000;  // Time (ms) between scans
 function startScan() {
   if(poweredOn) {
     noble.startScanning();
-    setTimeout(stopScan, scanTime);
+    setTimeout(stopScan, config.scanTimeSecs*1000);
   }
 }
 
 function stopScan() {
   noble.stopScanning();
   if(poweredOn) {
-    setTimeout(startScan, scanInt);
+    setTimeout(startScan, config.scanIntSecs*1000);
   }
 }
 

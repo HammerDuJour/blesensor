@@ -8,3 +8,4 @@ debug.txt
 *.pklg
 *.out
 node_modules
+config.json
