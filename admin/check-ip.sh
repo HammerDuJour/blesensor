@@ -16,10 +16,14 @@ NEWIP=$($(dirname "$0")/get-public-ip.sh)
 NEWLOCIP=$($(dirname "$0")/get-local-ip.sh)
 
 CURRIP=$(cat $IPFILE 2>/dev/null)
+#*** Ignore cases when obtaining the public IP fails
+if [ "$NEWIP" == "" ]; then
+   NEWIP=$CURRIP
+fi
 CURRLOCIP=$(cat $LOCFILE 2>/dev/null)
 
 if [ "$CURRIP" != "$NEWIP" ] || [ "$CURRLOCIP" != "$NEWLOCIP" ]; then
    echo $NEWIP > $IPFILE
    echo $NEWLOCIP > $LOCFILE
-   $(dirname "$0")/textme.py "Pub: $NEWIP Loc: $NEWLOCIP" > /dev/null
+#   $(dirname "$0")/textme.py "Pub: $NEWIP Loc: $NEWLOCIP" > /dev/null
 fi

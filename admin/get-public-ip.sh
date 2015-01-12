@@ -8,6 +8,7 @@
 
 URL="http://checkip.dyndns.org"
 
+# *** wget with quiet (-q) and output to stdio instead of a file (-O -)
 if RESP=$(wget -qO - $URL); then
    RESP=${RESP##*: }
    # For some reason, the next line only works when I add more than one 
