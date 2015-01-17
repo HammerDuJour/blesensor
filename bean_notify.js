@@ -40,28 +40,38 @@ var charUuids = ['a495ff21c5b14b44b5121370f02d74de',
 //     upload the previous file to Dropbox.
 var logFile;
 function logFileUpdate(callback) {
-  var filePath = config.logPath + logFile;
   logFile = os.hostname() + '_' + moment().format("YYYY-MM-DD_HH-mm") + '.csv';
-  console.log("File name = " + logFile);
-  if(fs.existsSync(filePath)) {
-    dropbox.writeFile(filePath, function(err) {
-      if(err) {
-        logData("Error", "System", "Unable to upload " + filePath);
+  console.log("New log file = " + logFile);
+  fs.readdir(config.logPath, function(err, fileList) {
+    if(err) {
+      logData("Error", "System", "Unable to read log directory " + 
+        config.logPath);
+      return;
+    }
+    var uploadAttempts = 0;
+    fileList.forEach(function(file) {
+      if(file == logFile) { // Skip the current log file if it was created
+                            // right away.
+        uploadAttempts++;
       } else {
-        fs.unlink(filePath, function(err) {
-	  if(err) logData("Error", "System", "Unable to delete " + filePath);
-	});
-      }
-      if(typeof(callback) == 'function') {
-        callback();
-	return;
+        dropbox.writeFile(config.logPath + file, function(err) {
+	  uploadAttempts++;
+          if(err) {
+            logData("Error", "System", "Unable to upload " + file);
+          } else {
+            fs.unlink(config.logPath + file, function(err) {
+              if(err) logData("Error", "System", "Unable to delete " + file);
+            });
+          }
+	  // Call the callback after the last file upload attempt finishes
+          if(typeof(callback) == 'function' && 
+	    uploadAttempts == fileList.length) {
+            callback();
+          }
+        });
       }
     });
-  } else {
-    if(typeof(callback) == 'function') {
-      callback();
-    }
-  }
+  });
 }
 
 logFileUpdate();

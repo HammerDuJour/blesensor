@@ -105,10 +105,13 @@ exports.writeFile = function(filePath, callback) {
       var fileName = path.basename(filePath);
       getToken(function(token) {
         var dboxClient = dboxApp.client(token);
+	if(debug) console.log("Debug: Attempting to write to DBox");
         dboxClient.put(fileName, data, function(status, reply) {
+	  if(debug) console.log("Debug: DBox status = " + status);
           if(status == '200') {
-            callback(err);
+            callback(null);
           } else {
+	    if(!status) status = 'Not Connected';
             callback(status);
           }
         });
