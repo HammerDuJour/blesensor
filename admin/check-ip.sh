@@ -25,5 +25,5 @@ CURRLOCIP=$(cat $LOCFILE 2>/dev/null)
 if [ "$CURRIP" != "$NEWIP" ] || [ "$CURRLOCIP" != "$NEWLOCIP" ]; then
    echo $NEWIP > $IPFILE
    echo $NEWLOCIP > $LOCFILE
-#   $(dirname "$0")/textme.py "Pub: $NEWIP Loc: $NEWLOCIP" > /dev/null
+#   $(dirname "$0")/textme.py -m "Pub: $NEWIP Loc: $NEWLOCIP" > /dev/null
 fi
