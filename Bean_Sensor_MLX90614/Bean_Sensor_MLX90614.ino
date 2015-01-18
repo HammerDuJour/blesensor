@@ -32,6 +32,9 @@ void loop()
    *       setScratchData writes it from a buffer starting at index 0 from left
    *       to right so I'm writing the MSB into index 0 of the buffer.
   */
+
+  Bean.setLed(255, 0, 0);
+
   // minutes initialized to zero at startup and incremented after each sleep
   //temperature = Bean.getTemperature();
   if(debug){Serial.print("Running "); Serial.print(minutes); Serial.println(" minutes");}
@@ -58,6 +61,8 @@ void loop()
   buffer[1] = voltage & 0xFF;
   buffer[0] = voltage >> 8;
   Bean.setScratchData(3, buffer, 2);
+
+  Bean.setLed(0, 0, 0);
   
   if(debug){Bean.sleep(5000);}
   else {Bean.sleep(60000);}

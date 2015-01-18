@@ -4,6 +4,7 @@ var schedule = require('node-schedule');
 var os = require('os');
 var fs = require('fs');
 var dropbox = require('./dropbox.js');
+var exec = require('child_process').exec;
 
 var configPath = __dirname + '/config.json';
 try {
@@ -15,6 +16,8 @@ try {
   console.log('  Log Roll Int   : ' + config.logRollIntMins + ' min');
   console.log('  Scan Time      : ' + config.scanTimeSecs + ' sec');
   console.log('  Scan Int       : ' + config.scanIntSecs + ' sec');
+  console.log('  Disconnect SMS : ' + config.discSMS);
+  console.log('  Twilio config  : ' + config.twilioConfPath);
 }
 catch(err) {
   console.log("Error: Unable to parse " + configPath);
@@ -136,6 +139,13 @@ noble.on('scanStart', function() {
 
 var peripheralDisconnected = function() {
   logData("Event", this.advertisement.localName, "Lost Connection.");
+  if(config.discSMS) {
+    exec(__dirname + '/admin/textme.py -c ' + config.twilioConfPath +
+      ' -m "Lost "' + 
+      this.advertisement.localName, function(error, stdout, stderr) {
+      logData("Event", "textme.py", stdout);
+    });
+  }
   this.removeAllListeners();
 };
 

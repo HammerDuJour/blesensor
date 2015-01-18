@@ -4,5 +4,7 @@
   "dboxTokenPath"  : "/home/pi/dbox_token.txt",
   "logRollIntMins" : 60,
   "scanTimeSecs"   : 30,
-  "scanIntSecs"    : 300
+  "scanIntSecs"    : 300,
+  "discSMS"        : false,
+  "twilioConfPath" : "/home/pi/twilio.conf"
 }
