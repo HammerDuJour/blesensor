@@ -17,7 +17,8 @@ NEWLOCIP=$($(dirname "$0")/get-local-ip.sh)
 
 CURRIP=$(cat $IPFILE 2>/dev/null)
 #*** Ignore cases when obtaining the public IP fails
-if [ "$NEWIP" == "" ]; then
+#    sh on Raspbian does not support the '==' operator with null strings
+if [ "$NEWIP" = "" ]; then
    NEWIP=$CURRIP
 fi
 CURRLOCIP=$(cat $LOCFILE 2>/dev/null)
