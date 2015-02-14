@@ -9,7 +9,7 @@
 ### END INIT INFO
  
 # change this to wherever your node app lives # 
-path_to_node_app=/home/pi/blesensor/bean_notify.js
+path_to_node_app=/home/pi/blesensor/blesensor.js
  
 # Carry out specific functions when asked to by the system
 case "$1" in
