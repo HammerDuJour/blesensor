@@ -18,6 +18,9 @@ try {
   console.log('  Scan Int       : ' + config.scanIntSecs + ' sec');
   console.log('  Disconnect SMS : ' + config.discSMS);
   console.log('  Twilio config  : ' + config.twilioConfPath);
+  console.log('  subscribe/poll : ' + config.subPoll);
+  console.log('  Sensor prefix  : ' + config.prefix);
+  console.log('  Verbose        : ' + config.verbose);
 }
 catch(err) {
   console.log("Error: Unable to parse " + configPath);
@@ -98,20 +101,22 @@ var logRoll = schedule.scheduleJob(logRule, logFileUpdate);
 setInterval(logFileUpdate, config.logRollIntMins*60*1000);
 
 function logData(logType, sensorID, logMsg) {
-  var timestamp = moment().format("YYYY-MM-DD HH:mm:ss Z");
-  var logString = timestamp + ',' +
-                  logType + ',' +
-                  sensorID + ',' +
-                  logMsg;
-  console.log(logString);
-  fs.appendFile(config.logPath+logFile, logString + '\n', function (err) {
-    if(err){
-      console.log(timestamp + ',' +
-                  "Error" + ',' +
-                  "System" + ',' +
-                  "Error writing log file: " + err);
-    }
-  });
+  if(config.verbose || logType == "Data" || logType == "Error") {
+    var timestamp = moment().format("YYYY-MM-DD HH:mm:ss Z");
+    var logString = timestamp + ',' +
+                    logType + ',' +
+                    sensorID + ',' +
+                    logMsg;
+    console.log(logString);
+    fs.appendFile(config.logPath+logFile, logString + '\n', function (err) {
+      if(err){
+        console.log(timestamp + ',' +
+                    "Error" + ',' +
+                    "System" + ',' +
+                    "Error writing log file: " + err);
+      }
+    });
+  }
 }
 
 // *** Track the state of the BT radio. If it is off, not much will happen.
@@ -138,7 +143,8 @@ noble.on('scanStart', function() {
 });
 
 var peripheralDisconnected = function() {
-  logData("Event", this.advertisement.localName, "Lost Connection.");
+  logData("Event", this.advertisement.localName,
+    "Lost Connection.");
   if(config.discSMS) {
     exec(__dirname + '/admin/textme.py -c ' + config.twilioConfPath +
       ' -m "Lost "' + 
@@ -165,13 +171,13 @@ function stopScan() {
 
 // *** This is where the magic happens.  
 noble.on('discover', function(peripheral) {
-  logData("Event", peripheral.advertisement.localName, "Discovered.");
+  logData("Event", peripheral.advertisement.localName,
+    "Discovered.");
 
   // *** Use the local name in the BLE advertisement to find our devices
   //     with a prefix of "_pearl-".
   if(peripheral.advertisement.localName) {
-    if(peripheral.advertisement.localName.lastIndexOf("_pearl-", 0) === 0) {
-
+    if(peripheral.advertisement.localName.lastIndexOf(config.prefix, 0) === 0) {
       peripheral.on('disconnect', peripheralDisconnected);
 
       peripheral.connect(function(error) {
@@ -204,37 +210,74 @@ noble.on('discover', function(peripheral) {
             var voltChar = characteristics[2];
             var volts = 0;
 
-	    // *** This fires each time a notification is received. We're
-	    //     subscribing to changes in the "minutes".
-            minutesChar.on('read', function(data, isNotification) {
-              minutes = data.readUInt16BE(0);
-              tempChar.read(function(error, data) {
+	    if(config.subPoll == "subscribe") {
+	      // *** This fires each time a notification is received. We're
+	      //     subscribing to changes in the "minutes".
+              minutesChar.on('read', function(data, isNotification) {
+                minutes = data.readUInt16BE(0);
+                tempChar.read(function(error, data) {
+                  if(error) {
+                    logData("Error", peripheral.advertisement.localName,
+                      "Unable to read temp. Aborting reads.");
+                    peripheral.disconnect();
+                    return;
+                  }
+                  temp = data.readInt16BE(0);
+                  voltChar.read(function(error, data) {
+                    if(error) {
+                      logData("Error", peripheral.advertisement.localName,
+                        "Unable to read voltage. Aborting reads.");
+                      peripheral.disconnect();
+                      return;
+                    }
+                    volts = data.readInt16BE(0);
+                    logData("Data", peripheral.advertisement.localName,
+                      minutes + ',' +
+                      temp + ',' +
+                      (volts/100));
+                  });
+                });
+              });
+
+              minutesChar.notify(true, function(error) {
+                logData("Event",
+		  peripheral.advertisement.localName,
+                  "Subscribed to notification.");
+              });
+            } else {
+	      minutesChar.read(function(error, data) {
                 if(error) {
                   logData("Error", peripheral.advertisement.localName,
                     "Unable to read temp. Aborting reads.");
+                  peripheral.disconnect();
                   return;
-                }
-                temp = data.readInt16BE(0);
-                voltChar.read(function(error, data) {
+		}
+                minutes = data.readUInt16BE(0);
+                tempChar.read(function(error, data) {
                   if(error) {
                     logData("Error", peripheral.advertisement.localName,
-                      "Unable to read voltage. Aborting reads.");
+                      "Unable to read temp. Aborting reads.");
+                    peripheral.disconnect();
                     return;
                   }
-                  volts = data.readInt16BE(0);
-                  logData("Data", peripheral.advertisement.localName,
-                    minutes + ',' +
-                    temp + ',' +
-                    (volts/100));
+                  temp = data.readInt16BE(0);
+                  voltChar.read(function(error, data) {
+                    if(error) {
+                      logData("Error", peripheral.advertisement.localName,
+                        "Unable to read voltage. Aborting reads.");
+                      peripheral.disconnect();
+                      return;
+                    }
+                    volts = data.readInt16BE(0);
+                    logData("Data", peripheral.advertisement.localName,
+                      minutes + ',' +
+                      temp + ',' +
+                      (volts/100));
+                    peripheral.disconnect();
+	          });
                 });
               });
-            });
-
-            minutesChar.notify(true, function(error) {
-              logData("Event", peripheral.advertisement.localName,
-                "Subscribed to notification.");
-            });
-
+	    }
           });
         });
       });

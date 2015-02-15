@@ -6,5 +6,8 @@
   "scanTimeSecs"   : 30,
   "scanIntSecs"    : 300,
   "discSMS"        : false,
-  "twilioConfPath" : "/home/pi/twilio.conf"
+  "twilioConfPath" : "/home/pi/twilio.conf",
+  "subPoll"        : "poll",
+  "prefix"         : "_pearl-",
+  "verbose"        : true
 }
