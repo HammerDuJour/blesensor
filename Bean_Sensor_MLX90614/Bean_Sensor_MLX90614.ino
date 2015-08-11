@@ -10,6 +10,8 @@ int16_t voltage;
 boolean debug = false;
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 
+const int chgPin = 0;
+
 void setup()
 {
   // Bean.setBeanName("FrankenBean");
@@ -19,6 +21,7 @@ void setup()
     Serial.println("Bean_Sensor: Initializing.");
   }
   mlx.begin();  
+  pinMode(chgPin, INPUT_PULLUP);
 }
 
 void loop()
@@ -33,7 +36,7 @@ void loop()
    *       to right so I'm writing the MSB into index 0 of the buffer.
   */
 
-  Bean.setLed(255, 0, 0);
+  Bean.setLed(0, 0, 255);  // Set LED to blue when reading
 
   // minutes initialized to zero at startup and incremented after each sleep
   //temperature = Bean.getTemperature();
@@ -62,7 +65,13 @@ void loop()
   buffer[0] = voltage >> 8;
   Bean.setScratchData(3, buffer, 2);
 
-  Bean.setLed(0, 0, 0);
+  if(digitalRead(chgPin)) {
+    Bean.setLed(0, 255, 0);  // Green when powered and not charging
+  } else {
+    Bean.setLed(255, 0, 0);  // Red when charging
+  }
+  if(debug){Serial.print("Chg          = "); Serial.println(digitalRead(chgPin));}
+  // Bean.setLed(0, 0, 0);
   
   if(debug){Bean.sleep(5000);}
   else {Bean.sleep(60000);}
